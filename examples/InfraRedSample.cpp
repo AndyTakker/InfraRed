@@ -3,7 +3,6 @@
 // IR-приемник подключается к порту PD4.
 //------------------------------------------------------------------------------
 #include <InfraRed.h>
-#include <SysClock.h>
 #include <debug.h>
 
 InfraRed ir; // Объект, отвечающий за прием команд с IR-пульта
@@ -56,10 +55,8 @@ void EXTI7_0_IRQHandler(void) {
 int main() {
   // Стандартные приседания
   SystemCoreClockUpdate();
-
-  SysClock sc;    // Подключаем библиотеку работы с временными интервалами
-  sc.begin();     // Инициализируем библиотеку
-  sc.delay(4000); // Ждем, пока раздуплится терминал в VSCode
+  Delay_Init();
+  Delay_Ms(4000); // Ждем, пока раздуплится терминал в VSCode
 
   USART_Printf_Init(115200);
   printf("SystemClk: %lu\r\n", SystemCoreClock);      // Для посмотреть частоту процесора (48мГц)
