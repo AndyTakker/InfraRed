@@ -1,0 +1,19 @@
+{
+  "name": "InfraRed",
+  "version": "1.0.0",
+  "description": "Bare-metal receive infrared signal for CH32V003 and WCH RISC-V MCUs.",
+  "keywords": ["infrared", "CH32V003", "WCH", "RISC-V", "bare-metal"],
+  "authors": {
+    "name": "A. Kolesov",
+    "maintainer": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AndyTakker/InfraRed.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/AndyTakker/InfraRed",
+  "frameworks": "*",
+  "platforms": ["wch-riscv"],
+  "headers": ["InfraRed.h"]
+}
