@@ -7,29 +7,8 @@
 
 InfraRed::InfraRed(PinName pin) {
   _pin = pin;
-  timerInit();
   pinMode(_pin, GPIO_Mode_IPU);
   pinExtiInit(_pin, EXTI_Trigger_Falling);
-}
-
-void InfraRed::timerInit() {
-  // // Настройка TIM2 на 1 МГц (1 мкс тик)
-  // RCC->APB1PCENR |= RCC_APB1Periph_TIM2;       // Включить тактирование TIM2
-  // TIM2->PSC = (SystemCoreClock / 1000000) - 1; // 47 при 48 МГц
-  // TIM2->ATRLR = 0xFFFF;                        // Автозагрузка (максимум)
-  // TIM2->SWEVGR = 1;                            // reset prescaler
-  // TIM2->CNT = 0;                               // Сброс счётчика
-  // TIM2->CTLR1 = TIM_CounterMode_Up;            // Режим up-counting
-  // TIM2->CTLR1 |= TIM_CEN;
-
-  // Настройка TIM1 на 1 МГц (1 мкс тик)
-  RCC->APB2PCENR |= RCC_APB2Periph_TIM1;       // Включить тактирование TIM2
-  TIM1->PSC = (SystemCoreClock / 1000000) - 1; // 47 при 48 МГц
-  TIM1->ATRLR = 0xFFFF;                        // Автозагрузка (максимум)
-  TIM1->SWEVGR = 1;                            // reset prescaler
-  TIM1->CNT = 0;                               // Сброс счётчика
-  TIM1->CTLR1 = TIM_CounterMode_Up;            // Режим up-counting
-  TIM1->CTLR1 |= TIM_CEN;
 }
 
 void InfraRed::receive(void) {
@@ -38,10 +17,9 @@ void InfraRed::receive(void) {
   }
   EXTI_ClearITPendingBit(extiLine(_pin)); // Сброс прерывания
 
-  // uint16_t time = TIM2->CNT; // Интервал с предыдущего прерывания
-  // TIM2->CNT = 0;             // И обнулим счетчик
-  uint16_t time = TIM1->CNT; // Интервал с предыдущего прерывания
-  TIM1->CNT = 0;             // И обнулим счетчик
+  uint32_t now = micros();
+  uint16_t time = now - _lastTime; // Интервал с предыдущего прерывания
+  _lastTime = now;                 
 
   if (time > _NEC_START_MIN && time < _NEC_START_MAX) { // Длительность стартового импульса.
     _start = true;                                      // Начинаем прием нового пакета
