@@ -5,8 +5,11 @@
 //------------------------------------------------------------------------------
 #include "InfraRed.h"
 
-InfraRed::InfraRed(void) {
+InfraRed::InfraRed(PinName pin) {
+  _pin = pin;
   timerInit();
+  pinMode(_pin, GPIO_Mode_IPU);
+  pinExtiInit(_pin, EXTI_Trigger_Falling);
 }
 
 void InfraRed::timerInit() {
@@ -21,6 +24,11 @@ void InfraRed::timerInit() {
 }
 
 void InfraRed::receive(void) {
+  if (EXTI_GetITStatus(extiLine(_pin)) == RESET) { // На "нашем" пине сигнал не изменился
+    return; // Не наше прерывание, уходим.
+  }
+  EXTI_ClearITPendingBit(extiLine(_pin)); // Сброс прерывания
+
   uint16_t time = TIM2->CNT; // Интервал с предыдущего прерывания
   TIM2->CNT = 0;             // И обнулим счетчик
 

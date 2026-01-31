@@ -16,9 +16,9 @@
 // - для расчета длительности импульсов используется счетчик таймера TIM2.
 // - режим повтора не реализован (ни разу не потребовался).
 //------------------------------------------------------------------------------
-#ifndef INFRARED_H
-#define INFRARED_H
+#pragma once
 
+#include <ch32Pins.hpp>
 #include <ch32v00x.h>
 
 #define _NEC_PACKET_SIZE 32  // размер пакета (бит)
@@ -40,7 +40,7 @@
 
 class InfraRed {
   public:
-  InfraRed();
+  InfraRed(PinName pin);
   void receive();        // Вызывать при переходе из High в Low (Falling) на пине ИК приемника в прерывании
   bool ready();          // Возвращает true, если пакет прочитан
   uint32_t readPacket(); // Прочитать пакет целиком (адрес + ~адрес + команда + ~команда)
@@ -53,10 +53,10 @@ class InfraRed {
   private:
   void timerInit(); // Настройка TIM2 для расчета интервалов времени между фронтами импульсов
 
+  PinName _pin;                                 // Имя пина ИК приемника (в стиле PD4, PD5 и т.д.)
   volatile uint32_t _packet = 0;               // Буфер последнего принятого пакета (4 байта)
   volatile uint32_t _buffer = 0;               // Буфер текущего принимаемого пакета (4 байта)
   volatile int8_t _counter = _NEC_PACKET_SIZE; // Счетчик бит в принимаемом пакете
   volatile bool _ready = false;                // Флаг готовности данных к чтению
   volatile bool _start = false;                // старт флаг
 };
-#endif
