@@ -11,7 +11,7 @@
 #include <InfraRed.h>
 #include <debug.h>
 
-InfraRed ir(PD4); // Объект, отвечающий за прием команд с IR-пульта на пине PD4
+InfraRed ir(PA2); // Объект, отвечающий за прием команд с IR-пульта
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +28,7 @@ void EXTI7_0_IRQHandler(void) {
 int main() {
   // Стандартные приседания
   SystemCoreClockUpdate();
-  Delay_Init();
+  // Delay_Init();
   USART_Printf_Init(115200);
   printf("SystemClk: %lu\r\n", SystemCoreClock);      // Для посмотреть частоту процесора (48мГц)
   printf("   ChipID: %08lx\r\n", DBGMCU_GetCHIPID()); // Для посмотреть ID чипа, от нефиг делать
