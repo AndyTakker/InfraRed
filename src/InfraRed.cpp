@@ -4,8 +4,8 @@
 // Но не все пульты соблюдают это правило, хотя по параметрам вроде NEC.
 //------------------------------------------------------------------------------
 #include "InfraRed.h"
-
-InfraRed::InfraRed(PinName pin) {
+// Конструктор. Получает указатель на функцию времени, отсчитывающую !!! микросекунды
+InfraRed::InfraRed(PinName pin, uint32_t (*getMicros)()) : m_getMicros(getMicros) {
   _pin = pin;
   pinMode(_pin, GPIO_Mode_IPU);
   pinExtiInit(_pin, EXTI_Trigger_Falling);
@@ -17,7 +17,7 @@ void InfraRed::receive(void) {
   }
   EXTI_ClearITPendingBit(extiLine(_pin)); // Сброс прерывания
 
-  uint32_t now = micros();
+  uint32_t now = m_getMicros();
   uint16_t time = now - _lastTime; // Интервал с предыдущего прерывания
   _lastTime = now;                 
 

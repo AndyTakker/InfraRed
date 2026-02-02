@@ -10,8 +10,9 @@
 //------------------------------------------------------------------------------
 #include <InfraRed.h>
 #include <debug.h>
+#include <SysClock.h>
 
-InfraRed ir(PA2); // Объект, отвечающий за прием команд с IR-пульта
+InfraRed ir(PA2, Sysclock.Micros); // Объект, отвечающий за прием команд с IR-пульта
 
 #ifdef __cplusplus
 extern "C" {
