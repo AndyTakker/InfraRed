@@ -15,7 +15,8 @@
 //   c IR-приемника.
 // - для расчета длительности импульсов необходимо в конструктор передать функцию,
 //   которая считает микросекунды. Например: Sysclock.Micros() или свою.
-// - режим повтора не реализован (пока ни разу не потребовался).
+// - режим повтора возвращает последний принятый пакет. Т.е. для прикладного 
+//   кода использование прозрачное - просто читай принятые пакеты.
 //------------------------------------------------------------------------------
 #pragma once
 
@@ -25,11 +26,14 @@
 #define _NEC_PACKET_SIZE 32  // размер пакета (бит)
 #define _NEC_TOLERANCE 150   // допуск high/low, мкс
 #define _NEC_TOLERANCE2 1500 // допуск start/repeat, мкс
+#define _NEC_SKIP_REPEAT 5   // пропуск первых повторов, шт
 
 // Тайминги NEC, мкс
-#define _NEC_HIGH_BIT 2250
-#define _NEC_LOW_BIT 1150
-#define _NEC_START_BIT 14400
+#define _NEC_HIGH_BIT 2250           // Длительность импульса HIGH
+#define _NEC_LOW_BIT 1150            // Длительность импульса LOW
+#define _NEC_START_BIT 14400         // Длительность импульса START
+#define _NEC_REPEAT 12300            // Длительность стартового импульса при повторе
+#define _NEC_MAX_PACKET_LENGTH 92700 // Максимальная длина пакета (мкс) (2250+1500)*32 + 14400 + 1500
 
 // =========================================================================
 #define _NEC_HIGH_MIN (_NEC_HIGH_BIT - _NEC_TOLERANCE)
@@ -38,6 +42,11 @@
 #define _NEC_LOW_MAX (_NEC_LOW_BIT + _NEC_TOLERANCE)
 #define _NEC_START_MIN (_NEC_START_BIT - _NEC_TOLERANCE2)
 #define _NEC_START_MAX (_NEC_START_BIT + _NEC_TOLERANCE2)
+
+#define _NEC_START_MIN (_NEC_START_BIT - _NEC_TOLERANCE2)
+#define _NEC_START_MAX (_NEC_START_BIT + _NEC_TOLERANCE2)
+#define _NEC_REPEAT_MIN (_NEC_REPEAT - _NEC_TOLERANCE2)
+#define _NEC_REPEAT_MAX (_NEC_REPEAT + _NEC_TOLERANCE2)
 
 class InfraRed {
   public:
@@ -59,5 +68,6 @@ class InfraRed {
   volatile int8_t _counter = _NEC_PACKET_SIZE; // Счетчик бит в принимаемом пакете
   volatile bool _ready = false;                // Флаг готовности данных к чтению
   volatile bool _start = false;                // старт флаг
-  uint32_t (*m_getMicros)();                   // Функция получения времени в микросекундах 
+  volatile int8_t _repeatCount = -1;           // Счетчик импульсов повтора
+  uint32_t (*m_getMicros)();                   // Функция получения времени в микросекундах
 };

@@ -4,6 +4,7 @@
 // Но не все пульты соблюдают это правило, хотя по параметрам вроде NEC.
 //------------------------------------------------------------------------------
 #include "InfraRed.h"
+
 // Конструктор. Получает указатель на функцию времени, отсчитывающую !!! микросекунды
 InfraRed::InfraRed(PinName pin, uint32_t (*getMicros)()) : m_getMicros(getMicros) {
   _pin = pin;
@@ -13,13 +14,17 @@ InfraRed::InfraRed(PinName pin, uint32_t (*getMicros)()) : m_getMicros(getMicros
 
 void InfraRed::receive(void) {
   if (EXTI_GetITStatus(extiLine(_pin)) == RESET) { // На "нашем" пине сигнал не изменился
-    return; // Не наше прерывание, уходим.
+    return;                                        // Не наше прерывание, уходим.
   }
   EXTI_ClearITPendingBit(extiLine(_pin)); // Сброс прерывания
 
   uint32_t now = m_getMicros();
   uint16_t time = now - _lastTime; // Интервал с предыдущего прерывания
-  _lastTime = now;                 
+  _lastTime = now;
+
+  if (time > _NEC_MAX_PACKET_LENGTH) { // Сигнала не было дольше. чем максимальная длительность пакета
+    _repeatCount = -1;                 // Значит автоповтора быть не могло.
+  }
 
   if (time > _NEC_START_MIN && time < _NEC_START_MAX) { // Длительность стартового импульса.
     _start = true;                                      // Начинаем прием нового пакета
@@ -35,7 +40,21 @@ void InfraRed::receive(void) {
     _packet = _buffer;                                                    // Копируем буфер в пакет
     _buffer = 0;                                                          // И почистим буфер
     _ready = true;                                                        // Признак наличия принятого пакета
+    _repeatCount = 0;                                                     // Сбросим счетчик повторов
     return;
+  }
+  // Обработаем автоповторы. 
+  // Мы здесь, потому что буфер еще не заполнен. Смотрим, что за импульс.
+  // Если это сигнал автоповтора, то проглотим некотрое количество таких импульсов
+  // чтобы избежать "дребезга", а потом взведем флаг готовности данных.
+  // И прикладной код просто прочитает предыдущий принятый пакет.
+  if (time > _NEC_REPEAT_MIN && time < _NEC_REPEAT_MAX) {
+    if (_repeatCount != -1) {
+      _repeatCount++;
+    }
+    if (_repeatCount > _NEC_SKIP_REPEAT) {
+      _ready = true;
+    }
   }
 }
 
