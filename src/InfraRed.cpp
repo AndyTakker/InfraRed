@@ -82,6 +82,10 @@ uint8_t InfraRed::readCommand() {
   return ((uint32_t)_packet >> 8 & 0xFF);
 }
 
+uint16_t InfraRed::getKeyCode() {
+  return (readAddress() << 8) | readCommand();
+}
+
 //==============================================================================
 // Проверка четности единиц в пакете.
 // Возвращает true, если число единиц в пакете нечетное, и false, если четное.

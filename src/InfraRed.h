@@ -56,6 +56,7 @@ class InfraRed {
   uint32_t readPacket(); // Прочитать пакет целиком (адрес + ~адрес + команда + ~команда)
   uint8_t readAddress(); // Прочитать адрес
   uint8_t readCommand(); // Прочитать команду
+  uint16_t getKeyCode(); // Прочитать полный код клавиши (адрес <<8 + команда)
   bool chkParity();      // Проверка четности пакета
   bool chkAddress();     // Проверка адреса
   bool chkCommand();     // Проверка команды
